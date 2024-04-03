@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Categories</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <ul id="categories">
+        <li id="1">Книги</li>
+        <li id="3">Учебная литература</li>
+    </ul>
+
+    <script>
+        $(document).ready(function() {
+            $('#categories li').click(function() {
+                var categoryItem = $(this);
+        if (categoryItem.hasClass('opened')) {
+            categoryItem.children('.children').hide();
+            categoryItem.removeClass('opened');
+        } else {
+            loadCategories(categoryItem.attr('id'), categoryItem);
+        }
+    });
+});
+
+        function loadCategories(parent_id, container) {
+            $.ajax({
+                type: 'GET',
+                url: 'load_categories.php',
+                data: {parent_id: parent_id},
+                success: function(data) {
+                    console.log(data);
+                    container.children('.children').remove(); // Удаляем существующие дочерние категории
+                    if (data.length > 0) {
+               var childrenContainer = $('<ul></ul>').addClass('children');
+               container.append(childrenContainer);
+               displayCategories(data, childrenContainer);
+               container.addClass('opened'); // Добавляем класс, чтобы указать, что категория открыта
+           }
+       }
+    });
+}
+
+        function displayCategories(categories, container) {
+            categories.forEach(function(category) {
+                var categoryItem = $('<li></li>').text(category.name);
+                container.append(categoryItem);
+                if (category.has_children) {
+                    categoryItem.css('cursor', 'pointer');
+                    categoryItem.click(function() {
+                        loadCategories(category.id, categoryItem);
+                    });
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
